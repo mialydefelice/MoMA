@@ -1,0 +1,199 @@
+// to be run (with appropriate envt variables) using 
+// ImageJ -macro mm_prelim.ijm Arg_i__$RAW_FILE__ArgSep__Arg_o__$PREPROC_DIR__ArgSep__Arg_c__$CHANNELS_ORDER
+// NB: running ImageJ --headless doesn't work with the HyperStackReg plugin since temporary files 
+// are opened by Bio-Formats by default which is not supported in  headless mode.
+
+// PROCESS MACRO ARGUMENT
+//default values
+path = ""; outdir = ""; pos_name = ""; roi_path = "";
+rotate = ""; ch_order = "";
+
+args = getArgument();
+
+while(lengthOf(args) > 1) { // 1 instead of 0 handles the case of final semicolon
+	separatorIdx = indexOf(args, "__ArgSep__");
+	if (separatorIdx >= 0) {
+		arg = substring(args, 0, separatorIdx); // capture the current pattern
+		args = substring(args, separatorIdx+10, lengthOf(args)); // remove the current pattern and its delimiter
+	} else {
+		arg = args;
+		args = '';
+	}
+	flag = capture(arg, "^Arg_([a-z])__.*");
+	value = substring(arg, 7, lengthOf(arg));
+
+	if (flag == 'i') {
+		path = value;
+	} else if (flag == 'o') {
+		outdir = value;
+	} else if (flag == 'p') {
+		pos_name = value;
+	} else if (flag == 'x') {
+		roi_path = value;
+	} else if (flag == 'r') {
+		rotate = value;
+	} else if (flag == 'c') {
+		ch_order = value;
+	} else {
+		print_stdout('Warning: ignored arg "' + arg +'" ');
+	}
+}
+
+// check arguments
+if (!File.exists(path)) {
+	print_stdout("error: input file cannot be found (" + path + ").");
+	eval("bsh", "System.exit(0);");
+}
+if (!File.exists(roi_path)) {
+	print_stdout("error: roi file cannot be found (" + path + ").");
+	eval("bsh", "System.exit(0);");
+}
+
+abort = true;
+if (File.exists(outdir)) {
+	if (File.isDirectory(outdir)) {
+		abort = false;
+	}
+}
+if (abort) {
+	print_stdout("error: output dir cannot be found.");
+	eval("bsh", "System.exit(0);");
+}
+
+if (!(rotate=="" || rotate=="180" || rotate=="90" || rotate=="270" || rotate=="-90")) {
+	print_stdout("error: rotation angle must be in [180, 90, 270, -90].");
+	eval("bsh", "System.exit(0);");
+}
+
+// OPEN ONE POSITION OF A MICRO-MANAGER DATASET
+// find series (position) index
+s  = 'import loci.formats.*; ';
+s += 'import loci.formats.ome.OMEXMLMetadata; ';
+s += 'ImageReader reader = new ImageReader(); ';
+s += 'OMEXMLMetadata omeMeta = MetadataTools.createOMEXMLMetadata(); ';
+s += 'reader.setMetadataStore(omeMeta); ';
+s += 'reader.setId("' + path + '"); ';
+s += 'seriesCount = reader.getSeriesCount(); ';
+s += 'reader.close(); ';
+s += 'String[] posNames = new String[seriesCount]; ';
+s += 'posIdx = -1; ';
+s += 'posStr = "' + pos_name + '"; ';
+s += 'for (int i=0; i<seriesCount; i++) { ';
+s += '    posNames[i] = omeMeta.getStageLabelName(i); ';
+s += '    if (posStr.equals(posNames[i])) posIdx = i; ';
+s += '} ';
+// open using bioformats
+s += 'import ij.*; ';
+s += 'import loci.plugins.*; ';
+s += 'import loci.plugins.in.ImporterOptions; ';
+s += 'ImporterOptions options = new ImporterOptions(); ';
+s += 'options.setId("' + path + '");' ;
+s += 'options.setVirtual(true); ';
+s += 'options.clearSeries(); ';
+s += 'options.setSeriesOn(posIdx, true); ';
+s += 'ImagePlus[] imps = BF.openImagePlus(options); ';
+s += 'imps[0].show(); ';
+eval("bsh", s);
+
+
+dir = File.getParent(path);
+filename = File.getName(path);
+name_parts = split(filename, ".");
+basename = name_parts[0];
+
+getDimensions(width, height, n_channels, n_slices, n_frames);
+print_stdout(filename + " opened: " + n_channels + " channel(s), " + n_frames + " frame(s), " + n_slices + " slice(s).");
+
+// convert to non-virtual image
+rename("virtual");
+run("Duplicate...", "title=" + basename + " duplicate");
+close("virtual");
+
+
+// REORDER CHANNELS (if argument exists)
+if (lengthOf(ch_order) > 0) {
+	if (lengthOf(ch_order) != n_channels) {
+		print_stdout("error: `channels order` argument does not match the number of channels.");
+		eval("bsh", "System.exit(0);");
+	}
+	run("Arrange Channels...", "new=" + ch_order);	
+	print_stdout("channels reordered to " + ch_order);
+}
+
+
+// REGISTER TO FIRST FRAME AND FIRST CHANNEL
+Stack.setChannel(1);
+Stack.setFrame(1);
+run("HyperStackReg", "transformation=Translation");
+print_stdout("stack successfully registered.");
+
+
+// CROP (if ROI file exists)
+if (roi_path != "") {
+	open(roi_path);
+	run("Crop");
+	print_stdout("stack cropped using ROI file: " + roi_path);
+} else {
+	print_stdout("no ROI path argument: the image was not cropped.");
+}
+
+
+// ROTATE (if argument exists)
+if (rotate == "180") {
+	run("Rotate... ", "angle=180 grid=0 interpolation=None stack");
+	print_stdout("stack successfully rotated.");
+} else if (rotate == "90") {
+	run("Rotate 90 Degrees Left");
+	print_stdout("stack successfully rotated.");
+} else if (rotate == "270" || rotate == "-90") {
+	run("Rotate 90 Degrees Right");
+	print_stdout("stack successfully rotated.");
+}
+
+
+// SAVE IMAGE SEQUENCE
+outname = basename + "_" + pos_name + "_preproc";
+outname = replace(outname, "_", "-"); // dirty hack to circumvent a bug of mm_preprocess
+run("Image Sequence... ", "format=TIFF name=" + outname + " digits=4 save=\'" + outdir + "\'");
+print_stdout("image sequence saved to " + outdir);
+
+
+// TERMINATE IMAGEJ PROCESS
+eval("bsh", "System.exit(0);");
+setBatchMode("exit and display");
+
+
+
+
+// CUSTOM FUNCTIONS
+
+function print_stdout(fstr) {
+	eval("bsh", "System.out.println(\"" + fstr + "\");");
+}
+
+function escape_string(fstr) {
+	str = fstr;
+	str = replace(str, "\\[", "\\\\[");
+	str = replace(str, "\\]", "\\\\]");
+	return str;
+}
+
+function capture(fstr, fpattern) {
+	// fpattern must match the entire fstr and be double-escaped (e.g. \\\\[ to match a square bracket)
+	s  = 'import java.util.regex.*; ';
+	s += 'Pattern argPattern = Pattern.compile("' + fpattern + '"); ';
+	s += 'Matcher argMatch = argPattern.matcher("' + fstr + '"); ';
+	s += 'arg = ""; ';
+	s += 'if (argMatch.matches()) {' ;
+	s += '  arg = argMatch.group(1); ';
+	s += '} ';
+	s += 'return(arg); ';
+	arg = eval("bsh", s);
+	return arg+""; // must be casted to a string
+}
+
+function duplicateImage(img, new) {
+	selectWindow(img);
+	run("Select None");
+	run("Duplicate...", "title=" + new);
+}
