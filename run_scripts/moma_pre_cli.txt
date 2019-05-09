@@ -1,0 +1,116 @@
+#!/bin/bash
+
+FIJI_MACRO="/Users/mialydefelice/Documents/Code_repositories/DIMM/command_line/moma_pre_cli.ijm"
+
+T_START=`date +"%s"`
+umask 0002 # make files permissions 664
+
+# DISPLAY HELP
+if [ $# -lt 2 ]; then 
+	echo "Usage: moma_pre_cli -i <raw-image> -o <output-folder> [-p pos_name] [-x roi_path] [-r 180] [-c 21] [-tmin 6] [-tmax 127]"
+	echo "NB: DO NOT USE -x ARGUMENTS WHEN RUNNING THROUGH \`qsub\` (since they are interpreted as \`qsub\` arguments)"
+	echo "   -i     path of raw image (or dataset) to analyze"
+	echo "   -o     path of folder to use for output"
+	echo "   -p     name of the position to analyze"
+	echo "   -x     path of the roi file to crop growth channels only"
+	echo "   -r     rotation angle (in 180, 90, -90, 270)"
+	echo "   -c     reorder fluorescence channels"
+	echo "   -m     path to fiji macro"
+	echo "   -tmin  first time-point to be processed"
+	echo "   -tmax  last time-point to be processed"
+	echo; exit 2
+fi
+export JAVA_OPTS="-Xms2G -Xmx56G"
+
+
+# ARGUMENTS PARSING
+while [[ $# -ge 1 ]]
+do
+key="$1"
+case $key in
+    -i|--input)
+    RAW_FILE="$2"
+    shift
+    ;;
+    -o|--output)
+    PREPROC_DIR="$2"
+    shift
+    ;;
+    -p|--position)
+    POS_NAME="$2"
+    shift
+    ;;
+    -x|--roi_path)
+    ROI_PATH="$2"
+    shift
+    ;;
+    -r|--rotation)
+    ROTATE="$2"
+    shift
+    ;;
+    -c|--channels_order)
+    CHANNELS_ORDER="$2"
+    shift
+    ;;
+    -m|--macro)
+    FIJI_MACRO="$2"
+    shift
+    ;;
+    -tmin|--min_time)
+    TMIN="$2"
+    shift
+    ;;
+    -tmax|--max_time)
+    TMAX="$2"
+    shift
+    ;;
+    *)
+    # unknown option
+    ;;
+esac
+shift
+done
+
+if [ -z "$MMPRE_HOME" ]; then printf "Environment variable MMPRE_HOME need to be set!\n" >&2; exit 1; fi
+if [ -z "$RAW_FILE" ]; then printf 'ERROR: option "-i RAW_FILE" not given.\n' >&2; exit 1; fi
+if [ -z "$PREPROC_DIR" ]; then printf 'ERROR: option "-o PREPROC_DIR" not given.\n' >&2; exit 1; fi
+
+# SETTING THE ENVIRONMENT
+if [ -z $(which fiji) ] ; then printf "Error: fiji is not found in your PATH.\n\n"; exit 1; fi
+if [ -z $(which mmpreprocess) ] ; then printf "Error: mmpreprocess is not found in your PATH.\n\n"; exit 1; fi
+if [ -z $(which xvfb-run) ] ; then printf "Error: you need to install and configure XVFB.\n\n"; exit 1; fi
+printf "run on %s: %s\n\n" "$(hostname)" "$(date)"
+mkdir $PREPROC_DIR
+
+
+# FIJI STEP
+echo $RAW_FILE
+echo $PREPROC_DIR
+# run mm_prelim.ijm in Fiji using xvfb
+FIJIM="fiji_mm -- -macro $FIJI_MACRO"
+ARGS="Arg_i__${RAW_FILE}__ArgSep__Arg_o__${PREPROC_DIR}"
+if [ -n "$POS_NAME" ]; then ARGS="${ARGS}__ArgSep__Arg_p__${POS_NAME}"; fi # append position argument
+if [ -n "$ROI_PATH" ]; then ARGS="${ARGS}__ArgSep__Arg_x__${ROI_PATH}"; fi # append crop roi argument
+if [ -n "$ROTATE" ]; then ARGS="${ARGS}__ArgSep__Arg_r__${ROTATE}"; fi # append rotation argument
+if [ -n "$CHANNELS_ORDER" ]; then ARGS="${ARGS}__ArgSep__Arg_c__${CHANNELS_ORDER}"; fi # append channels order argument
+ARGS=${ARGS// /\\ } # replace all spaces with backslashes
+CMD="xvfb-run $FIJIM $ARGS"
+echo $CMD
+$CMD
+
+
+# MMPREPROCESS STEP
+#N_CHANNELS=$(find $PREPROC_DIR -type f -regex "^.*t0*1_.*$" | wc -l)
+N_CHANNELS=$(find $RAW_FILE -type f -regex "^.*t0*1_.*$" | wc -l)
+
+# run mmpreprocess
+#CMD="mmpreprocess -i $PREPROC_DIR -c $N_CHANNELS" # ${#CHANNELS_ORDER}
+CMD="mmpreprocess $RAW_FILE $N_CHANNELS" # ${#CHANNELS_ORDER}
+if [ -n "$TMIN" ]; then CMD="$CMD -tmin $TMIN"; fi # append optional argument
+if [ -n "$TMAX" ]; then CMD="$CMD -tmax $TMAX"; fi # append optional argument
+echo $CMD
+$CMD
+
+T_END=`date +"%s"`
+RUN_TIME=$((echo "($T_END-$T_START)/3600") | bc -l | xargs printf "%.3f")
+echo "$(basename $RAW_FILE) preprocessed in $RUN_TIME hours."
