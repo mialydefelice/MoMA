@@ -2,4 +2,4 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-java -jar $DIR/MotherMachine_-0.10.6.jar -i $1 -o $2 --headless
+java -jar $DIR/MotherMachine_-0.10.9.jar -i $1 -o $2 --headless
