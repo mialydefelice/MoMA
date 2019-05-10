@@ -39,10 +39,10 @@ and download
 1. Download Gurobi binary in [Gurobi Download Center](http://www.gurobi.com/downloads/download-center) 
 * Get the right license for you from [Gurobi](http://www.gurobi.com)
 * Add the following to your .bashrc file so the path to your gurobi version is set, and the license is accessible.
-`export GUROBI_HOME="/opt/gurobi{version}/mac64"
-export PATH="${PATH}:${GUROBI_HOME}/bin"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
-export GRB_LICENSE_FILE=/your/path/to/your/gurobi/license/gurobi.lic`
+`export GUROBI_HOME="/opt/gurobi{version}/mac64"`
+`export PATH="${PATH}:${GUROBI_HOME}/bin"`
+`export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"`
+`export GRB_LICENSE_FILE=/your/path/to/your/gurobi/license/gurobi.lic`
 
 3. Install & run MoMA
 ## Wiki
