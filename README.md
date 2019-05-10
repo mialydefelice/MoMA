@@ -33,20 +33,17 @@ and download
 * [Example datasets](https://github.com/fjug/MoMA/wiki/MoMA%20Datasets)
 * [Tutorial movies](https://github.com/fjug/MoMA/wiki/MoMA%20Movies)
 
-## Publications
-[Optimal Joint Segmentation and Tracking of Escherichia Coli in the Mother Machine](http://link.springer.com/chapter/10.1007/978-3-319-12289-2_3#page-1)
-F Jug, T Pietzsch, D Kainmüller, J Funke, M Kaiser, E van Nimwegen, G Myers
-BAMBI@MICCAI, 2014
 
-[Tracking by Assignment Facilitates Data Curation](https://www.researchgate.net/profile/Florian_Jug/publication/265850602_Tracking_by_Assignment_Facilitates_Data_Curation/links/541f16b60cf2218008d3e3a5.pdf)
-F Jug, T Pietzsch, D Kainmüller, G Myers
-IMIC@MICCAI, 2014
-
-## Installation
+## Installation for use with command line
 
 1. Download Gurobi binary in [Gurobi Download Center](http://www.gurobi.com/downloads/download-center) 
-  - The current version is 6.5.2 supporting Windows 32/64, Linux 64, MacOSX 64, AIX 64 architectures
-2. Get the right license for you from [Gurobi](http://www.gurobi.com)
+* Get the right license for you from [Gurobi](http://www.gurobi.com)
+* Add the following to your .bashrc file so the path to your gurobi version is set, and the license is accessible.
+`export GUROBI_HOME="/opt/gurobi{version}/mac64"
+export PATH="${PATH}:${GUROBI_HOME}/bin"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
+export GRB_LICENSE_FILE=/your/path/to/your/gurobi/license/gurobi.lic`
+
 3. Install & run MoMA
 ## Wiki
 Find more information [here](https://github.com/fjug/MoMA/wiki).
