@@ -43,7 +43,23 @@ and download
 `export PATH="${PATH}:${GUROBI_HOME}/bin"`
 `export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"`
 `export GRB_LICENSE_FILE=/your/path/to/your/gurobi/license/gurobi.lic`
+* Run your .bashrc file by typing `source ~/.bashrc` in your command line.
 
-3. Install & run MoMA
+2. Create a local file (`run_scripts_local`) to hold all necessary files to run scripts.
+ * Since the .jar files (downloaded at a later step) are so large, they cannot be stored within the github repository. We will have to store all the files necessary to run this program in a different file.
+ * Copy the contents of run_scripts into run_scripts_local.
+
+3. Download necessary Jar files:
+* From [http://sites.imagej.net/MoMA/plugins/](http://sites.imagej.net/MoMA/plugins/) download MMPreprocess_-1.2.jar-20170612121927 and MotherMachine_-0.10.9.jar-20170501231000
+* Do not download the latest versions of these files, if you do it will throw an error when you try to run them.
+* Add these files to `run_scripts_local`
+
+5. If you are on MacOSX make sure you have XQuartz installed and that `Xvfb` is included in this download.
+* I have included an updated version of `xvfb-run` that is compatible with mac, this file should already be within `run_scripts_local`
+
+6. Create symbolic links:
+
+
+4. Install & run MoMA
 ## Wiki
 Find more information [here](https://github.com/fjug/MoMA/wiki).
