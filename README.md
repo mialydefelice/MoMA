@@ -34,7 +34,7 @@ and download
 * [Tutorial movies](https://github.com/fjug/MoMA/wiki/MoMA%20Movies)
 
 
-## Installation for use with command line
+## Installation for use with command line on MacOSX
 
 1. Download Gurobi binary in [Gurobi Download Center](http://www.gurobi.com/downloads/download-center) 
 * Get the right license for you from [Gurobi](http://www.gurobi.com)
