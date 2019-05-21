@@ -50,21 +50,55 @@ and download
 
 * Run your .bashrc file by typing `source ~/.bashrc` in your command line.
 
-2. Create a local file (`run_scripts_local`) to hold all necessary files to run scripts.
- * Since the .jar files (downloaded at a later step) are so large, they cannot be stored within the github repository. We will have to store all the files necessary to run this program in a different file.
- * Copy the contents of run_scripts into run_scripts_local.
+2. [Download latest version of FIJI](http://fiji.sc).
 
-3. Download necessary Jar files:
+* Create a link named `fiji`, pointing to the ImageJ executable (e.g. `ImageJ-macosx`)
+
+3. Make sure you have Java8 installed. Don't check using system preferences rather in command line type:
+
+`java -version`. 
+
+If not download Java8, or OpenJDK.
+
+* To download OpenJDK type the following into your command line: `brew cask install adoptopenjdk`.
+
+* Else, visit [Oracle](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) to download Java8
+
+4. Create a local file (`run_scripts_local`) to hold all necessary files to run scripts.
+
+ * Since the .jar files (downloaded at a later step) are so large, they cannot be stored within the github repository. We will have to store all the files necessary to run this program in a different file.
+ 
+ * Copy the contents of `run_scripts` into `run_scripts_local`.
+
+5. Download necessary Jar files:
+
 * From [http://sites.imagej.net/MoMA/plugins/](http://sites.imagej.net/MoMA/plugins/) download MMPreprocess_-1.2.jar-20170612121927 and MotherMachine_-0.10.9.jar-20170501231000
-* Do not download the latest versions of these files, if you do it will throw an error when you try to run them.
+
+* IMPORTANT: Do not download the latest versions of these files, if you do it will throw an error when you try to run them.
+
 * Add these files to `run_scripts_local`
 
-5. If you are on MacOSX make sure you have XQuartz installed and that `Xvfb` is included in this download.
-* I have included an updated version of `xvfb-run` that is compatible with mac, this file should already be within `run_scripts_local`
+6. If you are on MacOSX make sure you have XQuartz installed and that `Xvfb` is included in this download.
+* I have included an updated version of `xvfb-run` that is compatible with mac, this file should already be within `run_scripts_local` named `xvfb-run_updated`. 
+* If you are running Linux you may not be able to use this updated version. In this case the version you will need is already in the `run_scripts` folder, named `xvfb-run`
 
-6. Create symbolic links:
+7. Make files executible,run the following from the `run_scripts_local folder`.
+
+`chmod u+x moma_pre_cli`
+
+8. Create symbolic links:
+
+* Create link to Fiji:
+
+`ln -s /path/to/ImageJ-macosx /path/to/run_scripts_local/fiji`
+
+* Create link to `xvfb-run_updated` or `xvfb-run`.
+
+Make sure to point to the normal or updated version depending on the system you are using.
+
+`ln -s /path/to/run_scripts_local/xvfb-run_update.txt /path/to/run_scripts_local/xvfb-run`
 
 
-4. Install & run MoMA
+## Installation for use with FIJI.
 ## Wiki
 Find more information [here](https://github.com/fjug/MoMA/wiki).
