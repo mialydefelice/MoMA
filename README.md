@@ -100,5 +100,49 @@ Make sure to point to the normal or updated version depending on the system you 
 
 
 ## Installation for use with FIJI.
+
+MoMA is available for download in two different ways:
+* For **new users** it is **recommended** to try out the **Fiji plugins** which will guide you through the analysis process.
+* Advanced users may want to try the command line tools to facilitate automated pre-processing of many data sets, e.g. by exploiting high performance computing capabilities. Advanced users may also profit from direct access to MoMAs [open source code](Developing-MoMA).
+
+# Installation of Fiji and the MoMA plugin
+The first step is to download and install Fiji from http://fiji.sc/Downloads.
+Afterwards, run Fiji and click its _Help > Update..._ menu entry.
+
+In the _ImageJ updater_ dialog that appears click on the _Manage Update Sites_ button:
+
+<div align="center"><img src="https://github.com/fjug/MoMA/wiki/images/updatesites1.png" width="500"></div>
+
+The _Manage update sites_ dialog will open. Click the _Add update site_ button and enter "MoMA" in the _name_ column on the left and "http://sites.imagej.net/MoMA/" in the _URL_ column on the right. Click the _Close_ button afterwards.
+
+<div align="center"><img src="https://github.com/fjug/MoMA/wiki/images/updatesites2.png" width="500"></div>
+
+Close the _ImageJ Updater_ window by clicking the _Apply changes_ button:
+
+<div align="center"><img src="https://github.com/fjug/MoMA/wiki/images/updatesites4.png" width="500"></div>
+
+After restarting Fiji, a menu entry _Plugins > MoMA_ should appear. If not, please [contact us](mailto:jug@mpi-cbg.de)!
+
+## Running MoMA for the first time
+Check the installation by clicking the menu _Plugins > MoMA > MoMA application_;
+
+When you run MoMA for the first time, it will ask you to get a license for the [Gurobi Solver engine](http://www.gurobi.com/) it utilises for optimisation. Visit http://www.gurobi.com/downloads/licenses/license-center to acquire this license. Most academic users may want to click “Obtain a free university license”. Afterwards, copy and paste ```grbgetkey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx``` in the **Getting Gurobi License File** dialog.
+<div align="center"><img src="https://github.com/fjug/MoMA/wiki/images/Getting_Gurobi_License_File_and_Desktop2.png" width="400"></div>
+After clicking ok, a console window may appear showing the installation progress. Finally, after installation succeeded, a window titled _MoMA configuration_ will appear. You may download an [example data set](MoMA-Datasets) and follow the instructions in our [Quick user guide](Quick-user-guide) to learn how MoMA can be used.
+
+# Installation of command line tools for MoMA
+The following procedures are not neccessary for running MoMA inside Fiji. These steps are only recommended to be performed by advanced users requiring command line functionality.
+
+To run MoMAs command line tools, you need either Java 8 Development Kit or Runtime Environment installed on your computer. Download and install it from here:
+* [Download Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) (Development Kit)
+* [Download Java 8 JRE](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) (Runtime Environment)
+
+* Download the most recent version of MotherMachine_.jar and MMPreprocess_.jar from here:
+http://sites.imagej.net/MoMA/plugins/
+
+Detailed information on how to apply the preprocessing steps from the command line can be found here:
+* [Preprocessing From The Command Line](Preprocessing-From-The-Command-Line)
+
+
 ## Wiki
-Find more information [here](https://github.com/fjug/MoMA/wiki).
+Find more information on how to run the pipline visit [here](https://github.com/fjug/MoMA/wiki).
